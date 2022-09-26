@@ -114,6 +114,13 @@
                                                   (bigint (nth command 2)))
                        (response-integer))
                  (response-error-wrong-num-arguments cmd-name))
+
+      "DEL" (response-error-not-implemented cmd-name)
+      "COPY" (response-error-not-implemented cmd-name)
+      "TYPE" (response-error-not-implemented cmd-name)
+      "EXPIRE" (response-error-not-implemented cmd-name)
+      "EXPIREAT" (response-error-not-implemented cmd-name)
+      "PERSIST" (response-error-not-implemented cmd-name)
       (response-error-unknown-command cmd-name))))
 
 (defn handle-socket [client-socket]
