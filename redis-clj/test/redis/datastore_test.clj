@@ -1,4 +1,7 @@
 (ns redis.datastore-test
+  "Unit test for redis.datastore. 
+   Does not cover all functions since some of them are tested in the 
+   test_server.py instead"
   (:require [clojure.core.async :refer [go]]
             [clojure.test :refer :all]
             [redis.datastore :refer :all]))
@@ -27,8 +30,18 @@
     (Thread/sleep 200)
     (is (= (get-value "counter") 100010))))
 
+(deftest delete-keys-test
+  (set-value "key1" "hello")
+  (set-value "key2" "world")
+  (is (= (delete-keys ["key1" "key2" "key3"]) 2))
+  (is (= (get-value "key1") nil))
+  (is (= (get-value "key2") nil)))
+
+(deftest exist-keys-test
+  (set-value "key1" "hello")
+  (is (= (exist-keys ["key1" "key2"]) 1)))
+
 (comment
   (def x {})
-
   (get (assoc x "name" "Toan") "name")
   (:name (assoc x "name" "Toan")))
