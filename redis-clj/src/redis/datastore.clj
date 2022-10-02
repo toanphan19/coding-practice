@@ -1,11 +1,15 @@
-(ns redis.datastore)
+(ns redis.datastore
+  (:require [redis.expiration :as exp]))
 
 (def data
   "An atom map to store all of redis's data"
   (atom {}))
 
-(defn get-value [key]
-  (get @data key))
+
+(defn flush-db
+  "Delete all keys from the database."
+  []
+  (reset! data {}))
 
 (defn- set-val [key val] (swap! data assoc key val))
 (defn set-value
@@ -19,25 +23,9 @@
       (set-val key val))))
 
 
-(swap! data assoc key val)
-
-(defn inc-value
-  ([key]
-   (swap! data update key inc)
-   (get-value key))
-  ([key amount]
-   (swap! data update key (partial + amount))
-   (get-value key)))
-
 ;; For reference, this version is non-thread safe:
 ;; (defn inc-value [key]
 ;;   (reset! data (update @data key inc)))
-
-(defn exist-keys
-  [keys]
-  (->> keys
-       (filter (partial contains? @data))
-       (count)))
 
 (defn- delete-key [key]
   (swap! data dissoc key))
@@ -50,23 +38,62 @@
       (delete-key k))
     (count keys-to-delete)))
 
-(defn flush-db
-  "Delete all keys from the database."
-  []
-  (reset! data {}))
+(defn try-expire
+  "Try to expire a key"
+  [key]
+  (when (exp/is-expired key)
+    (delete-key key)
+    (exp/delete-expiration-time key)))
+
+(defn exist-keys
+  [keys]
+  (run! try-expire keys)
+  (->> keys
+       (filter (partial contains? @data))
+       (count)))
+
+
+(defn get-value
+  [key]
+  (try-expire key)
+  (get @data key))
+
+(defn inc-value
+  ([key]
+   (swap! data update key inc)
+   (get-value key))
+  ([key amount]
+   (swap! data update key (partial + amount))
+   (get-value key)))
+
 
 (defn copy
   "Copy a value to another key."
   [source destination]
   (set-value destination (get-value source)))
 
+(defn set-ttl
+  "Set time to live of a key"
+  [key seconds]
+  (exp/set-ttl key seconds))
+
+(defn set-expire-at
+  [key timestamp-seconds]
+  (exp/set-expiration-time key (* 1000 timestamp-seconds)))
+
 
 (comment
+  @data
   (set-value "lang" "clojure")
   (get-value "lang")
   (set-value "tmp" 0)
   (get-value "tmp")
   (inc-value "tmp")
+
+  (set-ttl "tmp" 1)
+  (exp/is-expired "tmp")
+  (try-expire "tmp")
+  (exist-keys ["tmp"])
 
   (re-matches #"^[0-9]*$" "123")
   (bigint "13x"))

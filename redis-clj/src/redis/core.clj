@@ -145,23 +145,38 @@
       "COPY" (case num-args
                3 (do (redis.datastore/copy (nth command 1)
                                            (nth command 2))
-                     (response-integer 1)))
-      "EXPIRE" (response-error-not-implemented cmd-name)
-      "EXPIREAT" (response-error-not-implemented cmd-name)
+                     (response-integer 1))
+               (response-error-wrong-num-arguments cmd-name))
+      "EXPIRE" (case num-args
+                 3 (do (redis.datastore/set-ttl
+                        (nth command 1)
+                        (Integer/parseInt (nth command 2)))
+                       (response-integer 1))
+                 (response-error-wrong-num-arguments cmd-name))
+      "EXPIREAT" (case num-args
+                   3 (do (redis.datastore/set-expire-at
+                          (nth command 1)
+                          (Integer/parseInt (nth command 2)))
+                         (response-integer 1))
+                   (response-error-wrong-num-arguments cmd-name))
+
       "PERSIST" (response-error-not-implemented cmd-name)
       (response-error-unknown-command cmd-name))))
 
 (defn handle-socket [client-socket]
-  (while true
-    (try
-      (let [reader (io/reader client-socket)
-            msg (read-and-parse-msg reader)
-            response (handle msg)]
-        (log/info "Response:" response)
-        (send-message client-socket response))
-      (catch Exception e
-        (log/error "Exception:" (.getMessage e))
-        (send-message client-socket (response-error "ERR Server error"))))))
+  (try
+    (while true
+      (try
+        (let [reader (io/reader client-socket)
+              msg (read-and-parse-msg reader)
+              response (handle msg)]
+          (log/info "Response:" response)
+          (send-message client-socket response))
+        (catch Exception e
+          (log/error "Exception:" (.getMessage e))
+          (send-message client-socket (response-error "ERR Server error")))))
+    (catch java.net.SocketException _
+      (log/info "Client stopped the socket connection"))))
 
 (defn serve
   [port]
