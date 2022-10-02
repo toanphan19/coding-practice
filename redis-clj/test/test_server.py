@@ -82,8 +82,3 @@ def test_EXPIREAT():
     r.expireat("key_to_expire", int(time.time() + 1))
     time.sleep(1.001)
     assert r.exists("key_to_expire") == 0
-
-
-if __name__ == "__main__":
-    """This is just a basic test. Run `pytest` to test all methods."""
-    test_PING_ECHO()

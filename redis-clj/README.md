@@ -6,17 +6,28 @@ This is just a small learning project so it does not handle error/edge cases ver
 
 ## Usage
 
-```sh
+Start a Redis server at the default port 6379 (similar to `redis-server`) by running
+
+```bash
 lein run
+```
+
+Supporting commands:
+
+```bash
+PING, ECHO, GET, SET, INCR, INCRBY, EXISTS, DEL, COPY, EXPIRE, EXPIREAT, FLUSHDB
 ```
 
 ## Test
 
-```sh
-pytest # if you have it enabled, otherwise:
-python test/test_server.py
+Unit test:
+
+```bash
+lein test
 ```
 
-## References
+Test using Redis' official client:
 
-https://github.com/search?q=codecrafters
+```bash
+pytest
+```
