@@ -72,8 +72,8 @@ char = Character(
 
 if __name__ == "__main__":
     print("Silver Wolf")
-    # rotation = Rotation(2, 1, 1, 0)
-    rotation = Rotation(0, 3, 1, 0)
+    rotation = Rotation(2, 1, 1, 0)
+    # rotation = Rotation(0, 3, 1, 0)
     print(rotation)
 
     # builds = [
@@ -92,27 +92,64 @@ if __name__ == "__main__":
     #         break_effect=0,
     #     ),
     # ]
+
+    # Compare 1 crit-DPS with with Tingyun buffs vs 1 crit-DPS + 1 break-DPS
+    # builds = [
+    #     Stats(
+    #         atk=3000 + 600,
+    #         crit_rate=70,
+    #         crit_dmg=120,
+    #         element_dmg_boost=55 + 30 + 40,
+    #         break_effect=0,
+    #     ),
+    #     Stats(
+    #         atk=3000,
+    #         crit_rate=70,
+    #         crit_dmg=120,
+    #         element_dmg_boost=55,
+    #         break_effect=0,
+    #     ),
+    #     Stats(
+    #         atk=2700,
+    #         crit_rate=10,
+    #         crit_dmg=60,
+    #         element_dmg_boost=45,
+    #         break_effect=180,
+    #     ),
+    # ]
+
     builds = [
+        # Base
         Stats(
-            atk=3000 + 600,
-            crit_rate=70,
-            crit_dmg=120,
-            element_dmg_boost=55 + 30 + 40,
-            break_effect=0,
+            atk=2697,
+            crit_rate=40,
+            crit_dmg=90,
+            element_dmg_boost=8,
+            break_effect=140,
         ),
+        # With ATK rope
         Stats(
-            atk=3000,
-            crit_rate=70,
-            crit_dmg=120,
-            element_dmg_boost=55,
-            break_effect=0,
+            atk=2697 + 480,
+            crit_rate=40 + 6,
+            crit_dmg=90,
+            element_dmg_boost=8,
+            break_effect=140 + 10,
         ),
+        # With Quantum rope (bad substats)
         Stats(
-            atk=2700,
-            crit_rate=10,
-            crit_dmg=60,
-            element_dmg_boost=45,
-            break_effect=180,
+            atk=2697,
+            crit_rate=40,
+            crit_dmg=90,
+            element_dmg_boost=8 + 38.8,
+            break_effect=140,
+        ),
+        # With Break set, ATK rope
+        Stats(
+            atk=2697 + 480 - 280,
+            crit_rate=40,
+            crit_dmg=90,
+            element_dmg_boost=8,
+            break_effect=140 + 36,
         ),
     ]
 
@@ -126,3 +163,7 @@ if __name__ == "__main__":
             char.dmg_per_rotation(rotation),
         )
         print("Break DMG:", break_dmg(10.25, char.stats.break_effect))
+        print(
+            "Total DMG:",
+            char.dmg_per_rotation(rotation) + break_dmg(10.25, char.stats.break_effect),
+        )
